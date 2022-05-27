@@ -1,0 +1,47 @@
+<!-- chat/templates/notification/room.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Room</title>
+</head>
+<body>
+    {% for room in object_list %}
+        <div id="{{room}}"><a name="rooms" href="http://127.0.0.1:8000/rooms/room-chat/{{ room.roomname }}">{{ room.roomname }}</a></div><div id="{{room}}_notification">0</div><br />
+    {% endfor %}
+
+    <script>
+        const roomNames = document.getElementsByName('rooms');
+        const token = location.search.split('token=')[1];
+        roomNames.forEach((element) => {
+            console.log(element.textContent);
+            id = element.textContent;
+
+            let list_messages = {{ len_messages|safe }}
+            let list_rooms = {{ room_messages|safe }}
+
+            for(let i=0; i<list_messages.length; i++) {
+                document.getElementById(list_rooms[i] + '_notification').innerText = list_messages[i];
+            }
+
+            const socket = new WebSocket(
+                'ws://'
+                + window.location.host
+                + '/ws/notification/'
+                + id
+                + '_notification'
+                + '/'
+                + '?token=' + token
+            );
+
+            socket.onmessage = function(event){
+                var data = JSON.parse(event.data);
+                console.log('data: ' + data + ' id ' + data.room);
+                document.getElementById(data.room + '_notification').innerText = data.message;
+            }
+
+          })
+    </script>
+
+</body>
+</html>
